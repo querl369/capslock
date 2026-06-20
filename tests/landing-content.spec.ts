@@ -1,4 +1,7 @@
-import { test, expect } from '../helper/fixtures';
+import { expect } from '@playwright/test';
+
+import { test, } from '../helper/fixtures';
+
 import {
   CONTENT_TEXTS,
   CONTENT_IMAGE_ALTS,

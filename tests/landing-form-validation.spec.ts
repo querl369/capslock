@@ -1,5 +1,9 @@
-import { test, expect } from '../helper/fixtures';
+import { expect } from '@playwright/test';
+
+import { test } from '../helper/fixtures';
+
 import { ZIP, CONTACT, INVALID_EMAIL, INVALID_PHONE } from '../helper/data/test-data';
+
 import {
   advanceToProperty,
   advanceToContact,
@@ -8,23 +12,23 @@ import {
 
 test.describe('Quiz form validation', () => {
   test('ZIP code step enforces a valid, serviced ZIP', async ({ quiz }) => {
-    await test.step('empty ZIP does not advance', async () => {
-      await quiz.proceed();
+    await test.step('leave ZIP code empty and proceed to the next step', async () => {
+      await quiz.proceed({ toStep: 2 });
       await expect(quiz.activeStep()).toHaveClass(/step-1/);
     });
 
     await test.step('malformed ZIP (too short) does not advance', async () => {
-      await quiz.enterZip(ZIP.tooShort);
+      await quiz.enterZipCode(ZIP.tooShort);
       await quiz.proceed();
       await expect(quiz.activeStep()).toHaveClass(/step-1/);
     });
 
     await test.step('out-of-area ZIP routes to the notify-me branch', async () => {
-      await quiz.enterZip(ZIP.outOfArea);
+      await quiz.enterZipCode(ZIP.outOfArea);
       await quiz.submitZipAndAwaitResult();
       await expect(quiz.sorryPanel).toBeVisible();
       await expect(quiz.container.getByText(/Sorry/i)).toBeVisible();
-      await expect(quiz.notifyEmailInput).toBeVisible();
+      await expect(quiz.inputNotifyEmail).toBeVisible();
     });
   });
 
@@ -70,7 +74,7 @@ test.describe('Quiz form validation', () => {
 
     await test.step('empty email is flagged invalid and blocks progress', async () => {
       await quiz.proceed();
-      const valid = await quiz.emailInput.evaluate((el: HTMLInputElement) => el.validity.valid);
+      const valid = await quiz.inputEmail.evaluate((el: HTMLInputElement) => el.validity.valid);
       expect(valid).toBe(false);
       await expect(quiz.activeStep()).toHaveClass(/step-4/);
     });
@@ -78,7 +82,7 @@ test.describe('Quiz form validation', () => {
     await test.step('malformed email is flagged invalid and blocks progress', async () => {
       await quiz.fillEmail(INVALID_EMAIL.noAt);
       await quiz.proceed();
-      const valid = await quiz.emailInput.evaluate((el: HTMLInputElement) => el.validity.valid);
+      const valid = await quiz.inputEmail.evaluate((el: HTMLInputElement) => el.validity.valid);
       expect(valid).toBe(false);
       await expect(quiz.activeStep()).toHaveClass(/step-4/);
     });
@@ -100,7 +104,7 @@ test.describe('Quiz form validation', () => {
 
     await test.step('non-numeric input is rejected by the field mask', async () => {
       await quiz.fillPhone(INVALID_PHONE.nonNumeric);
-      await expect(quiz.phoneInput).toHaveValue('(___)___-____');
+      await expect(quiz.inputPhone).toHaveValue('(___)___-____');
     });
   });
 });

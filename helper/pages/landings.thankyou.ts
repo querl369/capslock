@@ -16,8 +16,4 @@ export class ThankYouPage {
     this.callbackMessage = page.getByText('We will be calling within the');
     this.notSalesCallMessage = page.getByText('This is not a sales call');
   }
-
-  pathname(): string {
-    return new URL(this.page.url()).pathname;
-  }
 }

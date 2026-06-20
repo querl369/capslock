@@ -9,7 +9,7 @@ import { ZIP, INTEREST, PROPERTY, CONTACT } from '../data/test-data';
 
 /** Step 1 → Step 2 using a serviced ZIP. */
 export async function advanceToInterest(quiz: QuizForm): Promise<void> {
-  await quiz.enterZip(ZIP.available);
+  await quiz.enterZipCode(ZIP.available);
   await quiz.submitZipAndAwaitResult();
 }
 
