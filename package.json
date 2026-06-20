@@ -1,0 +1,22 @@
+{
+  "name": "capslock-walkin-bath-tests",
+  "version": "1.0.0",
+  "description": "Playwright e2e tests for the Capslock Walk-In Bath landing page",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^26.0.0"
+  }
+}
