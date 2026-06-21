@@ -7,9 +7,6 @@ End-to-end Playwright (TypeScript) tests for the Walk-In Bath landing page at
 ## Requirements
 
 - **Node.js 24.x (LTS).** The repo pins `24.16.0` via `.node-version`.
-  > ⚠️ Node **23.9.0** is unsupported: Playwright's TypeScript loader throws
-  > `TypeError: context.conditions?.includes is not a function` when importing local
-  > `.ts` modules (page objects/fixtures). Node 22.x and 24.x both work; CI uses `lts/*`.
 
 ## Install & run
 
@@ -37,16 +34,16 @@ helper/
   flows/       quiz-flow.ts                        # reusable multi-step navigation, composed from page-object actions
   fixtures.ts                                      # test.extend fixtures: navigated page + page objects
 tests/
-  landing-content.spec.ts          # T1 content, T2 reviews
-  landing-form-submission.spec.ts  # T3 happy path → Thank You
-  landing-form-validation.spec.ts  # T4 zip, T5 property, T6 name, T7 email, T8 phone
+  landing-content.spec.ts          # static content + reviews
+  landing-form-submission.spec.ts  # happy path → Thank-You
+  landing-form-validation.spec.ts  # zip, out-of-area, property, name, email, phone, progress
 ```
 
 Page objects expose **actions and state only**; assertions live in the specs. Setup reuse
 is handled by Playwright fixtures, and each test runs in its own isolated context so tests
-are independent and CI-reproducible. The form auto-waits on Playwright's built-ins; the one
-explicit wait is the asynchronous ZIP availability lookup (`submitZipAndAwaitResult`), which
-waits for the resulting panel rather than a fixed delay.
+are independent and CI-reproducible. There are **no explicit waits**: the asynchronous ZIP
+availability lookup is covered by Playwright's auto-waiting — the next assertion (e.g. the
+step-2 heading or the "sorry" panel becoming visible) waits for the resolved state.
 
 ## Scenarios
 
@@ -58,66 +55,90 @@ The page is a single conversion funnel: a long content landing plus a 5-step qui
 
 1. Happy path — serviced ZIP completes all 5 steps → Thank-You page.
 2. Out-of-area ZIP → "notify me" branch.
-3. Page renders all expected content (copy + imagery).
-4. Review section shows all testimonials.
-5. ZIP validation — empty / malformed / out-of-area.
-6. Interest step — selection behavior.
-7. Property step — selection required.
-8. Contact step — name accepted, email validated.
-9. Email — native HTML5 validation.
-10. Phone — exactly 10 digits.
-11. Step progress indicator increments correctly.
-12. Back navigation / state persistence.
+3. Hero video block — video displayed with a source, badge loaded, benefits listed.
+4. Primary content sections & copy render; every content image is loaded.
+5. Product gallery renders all expected slides.
+6. Reviews — "Show more" reveals the remaining testimonials (and "Show less" collapses them).
+7. ZIP validation — empty / malformed.
+8. Property step — selection required.
+9. Contact step — empty name blocked.
+10. Contact step — a (single-word) name is accepted.
+11. Email — native HTML5 validation.
+12. Phone — exactly 10 digits.
+13. Step progress indicator reflects the current step.
+14. Back navigation / state persistence (not automated).
 
-**Selected tests (8)** — chosen to cover the conversion path, both ZIP branches, every
-spec-mandated field rule (ZIP / email / phone), the progress contract, and the page content
-the design team owns:
+**Selected tests (the top 5 are marked ★)** — prioritised to cover the conversion path, both
+ZIP branches, every spec-mandated field rule (ZIP / email / phone), and the highest-value
+defects. The remaining tests round out coverage of content and the other field rules.
 
-| # | Test | File |
-|---|------|------|
-| T1 | Renders all expected copy and imagery | `landing-content.spec.ts` |
-| T2 | Review section shows every testimonial | `landing-content.spec.ts` |
-| T3 | Serviced ZIP completes the quiz → Thank-You (asserts progress each step) | `landing-form-submission.spec.ts` |
-| T4 | ZIP step: empty / malformed / out-of-area branch | `landing-form-validation.spec.ts` |
-| T5 | Property step requires a selection | `landing-form-validation.spec.ts` |
-| T6 | Contact step accepts a valid name; empty name blocked | `landing-form-validation.spec.ts` |
-| T7 | Contact step enforces native email validation | `landing-form-validation.spec.ts` |
-| T8 | Phone step requires exactly 10 digits | `landing-form-validation.spec.ts` |
+| # | Test | Top 5 | File |
+|---|------|:-----:|------|
+| Happy path | Serviced ZIP completes the quiz → Thank-You page; asserts the step heading **and** the progress counter on every step (**catches the off-by-one defect**) | ★ | `landing-form-submission.spec.ts` |
+| ZIP rules | ZIP step rejects empty and malformed values | ★ | `landing-form-validation.spec.ts` |
+| Email rules | Contact step enforces native email validation | ★ | `landing-form-validation.spec.ts` |
+| Phone rules | Phone step requires exactly 10 digits | ★ | `landing-form-validation.spec.ts` |
+| Out-of-area | Out-of-area ZIP routes to the notify-me branch | ★ | `landing-form-validation.spec.ts` |
+| Property | Property step requires a selection | | `landing-form-validation.spec.ts` |
+| Name (empty) | Contact step rejects an empty name | | `landing-form-validation.spec.ts` |
+| Name (single word) | Contact step accepts a single-word name (**defect**) | | `landing-form-validation.spec.ts` |
+| Hero video | Video displayed with a source; badge loaded; benefits listed | | `landing-content.spec.ts` |
+| Content | All copy visible; every content image loaded | | `landing-content.spec.ts` |
+| Gallery | Product gallery renders all expected slides | | `landing-content.spec.ts` |
+| Reviews | "Show more" reveals the remaining testimonials | | `landing-content.spec.ts` |
 
-Validation tests follow a consistent shape: an **empty-state** step first, then an
-**invalid-value** step, each as its own `test.step`.
+**Why these 5:** they map directly to the assignment's mandatory form rules — successful
+submission ends on the Thank-You page (URL assertion), ZIP determines service availability
+(both the valid funnel and the out-of-area branch), and email/phone enforce the exact
+validation rules the spec calls out. They are the scenarios whose failure would most directly
+break the lead-capture funnel.
 
-## Bugs
+Each test is one self-contained scenario; multi-input rules (ZIP, phone) use `test.step` for an
+empty-state case followed by invalid-value cases.
 
-Tests are written to **expected** behavior, so the tests covering the defects below
-**fail on purpose** — they are the executable bug reports and will turn green once the bugs
-are fixed.
+## Defects
 
-**Confirmed defects (failing tests)**
+Two tests assert how the page should behave, so they fail against today's buggy page. We let them
+fail instead of masking the result: the suite stays an honest report, a broken page shows red, and
+each test turns green when its bug is fixed. Read them as executable bug reports. CI runs red until
+these two land.
 
-1. **Step indicator is off by one (T3).** On the *property* step the progress indicator
-   shows **"2 of 5"** instead of "3 of 5"; the sequence runs 2 → 2 → 4 → 5
-   (`span.stepProgress__stepCurrent`). *Repro:* enter a serviced ZIP, pick an interest,
-   reach the property step — the counter still reads 2.
-2. **Property step is not mandatory (T5).** Clicking *Next* with no property selected does
-   not advance **and shows no validation error** — the user gets stuck with no feedback.
-   *Expected:* an inline error message.
-3. **Name field silently demands a full name (T6).** A valid single-word name (e.g. `John`)
-   is rejected with no error and no progress; only a multi-word name (`John Smith`) advances.
-   *Expected:* a valid name proceeds, or a clear error explains the requirement.
+**Defects with a failing test**
 
-**Minor / UX issues (not asserted as failures)**
+1. **The step counter is off by one.** On the property step (step 3) it reads "2 of 5" instead of
+   "3 of 5". Across the funnel the counter goes 1, 2, 2, 4, 5
+   (`#form-container-1 [data-form-progress-current-step]`). To reproduce, enter a serviced ZIP,
+   pick an interest, and land on the property step: the counter still says 2. Covered by the
+   happy-path test `completing the quiz with a serviced ZIP reaches the Thank-You page`, which
+   checks the counter on every step.
+2. **The "Name" field demands a full name.** The label says "Name", yet `John` is rejected with
+   *"Your full name should contain both first and last name."* and the form stays on step 4.
+   Expected behaviour: accept a single name, or relabel the field "Full name". Covered by
+   `contact step accepts a single-word name`.
 
-- The ZIP input has no `required` / `maxlength` / `pattern` attributes; all validation is
-  client-side JS and easily bypassable.
-- The out-of-area "notify me" email field is `type="text"` (not `type="email"`), so it lacks
-  native HTML5 email validation.
-- Invalid phone input is silently blocked with no inline error message (the input mask
-  enforces digits, but there is no feedback explaining the 10-digit requirement).
-- Form inputs rely on placeholders rather than `<label>`/`aria` — this hurts accessibility
-  and forces placeholder-based locators instead of clean role/label locators.
-- The quiz widget is duplicated on the page (`#form-container-1` and `#form-container-2`);
-  tests scope to the first to stay deterministic.
+**Defects found, not yet automated**
+
+3. **The page renders the quiz twice.** Two widgets ship in the markup, `#form-container-1` and
+   `#form-container-2`, so every control and its `id` exists in duplicate. Duplicate `id`s break
+   the HTML contract and any `getElementById`/label association. The tests scope to the first
+   widget to stay deterministic.
+4. **The out-of-area notify form drops the lead.** On the "sorry" branch (ZIP `11111`), typing an
+   email and submitting fires no `fetch` or `XHR`, yet the panel swaps in "Thank you for your
+   interest, we will contact you...". The visitor sees success while the backend gets nothing. A
+   regression test would route-intercept the submit and assert a request goes out.
+
+**UX / minor issues**
+
+- The property step gives no "required" cue. Step 3 (single-select, required) looks identical to
+  step 2 (*"select all that apply"*, optional), so the requirement surfaces only as
+  *"Choose one of the variants."* after you press *Next*. The validation works, and the green test
+  `property step requires a selection` covers it.
+- The out-of-area email field uses `type="text"`, so the browser skips native email validation.
+- The ZIP field accepts letters while you type (`type="tel"`, no `pattern`/`maxlength`) and rejects
+  them only on submit (*"Wrong ZIP code."*).
+- Inputs rely on placeholders instead of `<label>`/`aria`, which hurts screen-reader users and
+  forces placeholder-based locators. The styled option cards also hide the real `<input>`, so a
+  test picks an interest or property by clicking the visible label.
 
 ## Future improvements
 

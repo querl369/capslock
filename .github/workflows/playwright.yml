@@ -4,6 +4,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:   # allow running the suite manually from the Actions tab
 jobs:
   test:
     timeout-minutes: 60

@@ -1,20 +1,15 @@
-/**
- * Centralised test data — defined once and reused across specs and page objects.
- */
-
 export const ZIP = {
-  /** Serviced area — drives the full happy-path funnel. */
+  /** Serviced area; routes to the full quiz funnel. */
   available: '68901',
-  /** Out-of-area — routes to the "sorry" notify-me branch. */
+  /** Out-of-area; routes to the "sorry" notify-me branch. */
   outOfArea: '11111',
-  /** Malformed values used by ZIP validation tests. */
   tooShort: '123',
   nonNumeric: 'abcde',
 } as const;
 
 export const CONTACT = {
   validName: 'John Smith',
-  /** Single-word name: valid per spec, but the site silently requires a full name (defect). */
+  /** The site rejects a single name, demanding first + last (defect). */
   singleWordName: 'John',
   validEmail: 'john.smith@example.com',
   validPhone: '5551234567',
@@ -43,5 +38,11 @@ export const PROPERTY = {
   mobile: 'Mobile Home',
 } as const;
 
-/** Total number of steps advertised by the form's progress indicator. */
-export const TOTAL_STEPS = 5;
+/** Quiz step numbers, named for readability (they map to `.step-N` / `btn-step-N`). */
+export const STEP = {
+  zip: 1,
+  interest: 2,
+  property: 3,
+  contact: 4,
+  phone: 5,
+} as const;

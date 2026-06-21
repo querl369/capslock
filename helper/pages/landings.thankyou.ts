@@ -1,9 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-/**
- * Page object for the post-submission "Thank you" page (/thankyou).
- * Exposes state only — assertions live in the tests.
- */
+/** Thank-you page object: exposes state only, no assertions. */
 export class ThankYouPage {
   readonly page: Page;
   readonly heading: Locator;

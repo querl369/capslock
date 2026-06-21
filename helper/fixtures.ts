@@ -9,15 +9,10 @@ type Fixtures = {
   thankYou: ThankYouPage;
 };
 
-/**
- * Shared fixtures provide ready-to-use page objects and a freshly loaded page,
- * so specs don't repeat navigation/initialisation. Each test still gets its own
- * isolated browser context, keeping tests independent and CI-reproducible.
- */
 export const test = base.extend<Fixtures>({
   landing: async ({ page }, use) => {
     const landing = new LandingMain(page);
-    await landing.goto();
+    await landing.page.goto('/');
     await use(landing);
   },
 

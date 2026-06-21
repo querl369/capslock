@@ -1,9 +1,3 @@
-/**
- * Expected static content of the landing page, harvested from the live page.
- * Used by the exhaustive content test so the copy lives in one place.
- */
-
-/** Visible text blocks expected on the page, top to bottom. */
 export const CONTENT_TEXTS: string[] = [
   'Here’s Why So Many Seniors Have Added This',
   'Hydrotherapy & air jets',
@@ -35,7 +29,6 @@ export const CONTENT_TEXTS: string[] = [
   '© Caps Lock, 2026. All Rights Reserved.',
 ];
 
-/** Distinct image alt texts expected to be present and loaded. */
 export const CONTENT_IMAGE_ALTS: string[] = [
   'Proudly American',
   'slider-img',
@@ -43,12 +36,38 @@ export const CONTENT_IMAGE_ALTS: string[] = [
   'wall-option',
 ];
 
-/** Authors of the testimonials in the review section. */
-export const REVIEW_AUTHORS: string[] = [
+export const HERO_BENEFITS: string[] = [
+  'Hydrotherapy & air jets',
+  'Targeted back, leg, wrist and foot massaging jets',
+  'Fast-drain technology',
+  'Heated backrest',
+  'Patented leak-free door system',
+  'Ultra-low step-in',
+  'Extra-wide entry door',
+  'Slip-resistant surfaces',
+  'easy-to-grip handrails',
+  'Bath walls',
+];
+
+/** Real slides, excluding the clones slick adds for the infinite loop. */
+export const CAROUSEL_SLIDE_COUNT = 8;
+
+/** Testimonials shown before "Show more" is clicked. */
+export const VISIBLE_REVIEW_AUTHORS: string[] = [
   'Review by Beverley W.',
   'Review by Bruce',
   'Review by Marie',
 ];
+
+/** Testimonials revealed only after "Show more" is clicked. */
+export const HIDDEN_REVIEW_AUTHORS: string[] = [
+  'Review by Denny',
+  'Review by Gerald',
+  'Review by Deborah',
+];
+
+export const REVIEW_COUNT_TOTAL =
+  VISIBLE_REVIEW_AUTHORS.length + HIDDEN_REVIEW_AUTHORS.length;
 
 export const REVIEW_SECTION_HEADING =
   'See What People Are Saying About Their Walk-In Bath Experience';

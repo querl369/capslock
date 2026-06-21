@@ -3,96 +3,97 @@ import { Locator, Page } from '@playwright/test';
 export class QuizForm {
   readonly page: Page;
   readonly form: Locator;
-  readonly inputZipCode: Locator;
-  readonly inputName: Locator;
+  readonly zipInput: Locator;
+  readonly nameInput: Locator;
+  readonly emailInput: Locator;
+  readonly phoneInput: Locator;
+  readonly notifyEmailInput: Locator;
+  readonly progressCurrent: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.form = page.locator('#form-container-1');
-    this.inputZipCode = this.form.getByRole('textbox', { name: 'Enter ZIP Code' });
-    this.inputName = this.form.getByRole('textbox', { name: 'Enter Your Name' });
+    this.zipInput = this.form.getByRole('textbox', { name: 'Enter ZIP Code' });
+    this.nameInput = this.form.getByRole('textbox', { name: 'Enter Your Name' });
+    this.emailInput = this.form.getByRole('textbox', { name: 'Enter Your Email' });
+    this.phoneInput = this.form.getByRole('textbox', { name: '(XXX)XXX-XXXX' });
+    // Email capture shown on the out-of-area ("sorry") branch.
+    this.notifyEmailInput = this.form.getByRole('textbox', { name: 'Email Address' });
+    this.progressCurrent = this.form.locator('[data-form-progress-current-step]');
   }
 
-  buttonNext(stepNumber: number): Locator {
-    return this.form.locator(
-      `button[type="submit"][data-tracking="btn-step-${stepNumber}"]`,
-      { hasText: 'Next'}
-    )
+  step(n: number): Locator {
+    return this.form.locator(`.steps.step-${n}`);
   }
 
-  get progressStep(): Locator {
-    return this.form.locator('[data-form-progress-current-step]');
+  stepHeading(n: number): Locator {
+    return this.step(n).locator('.stepTitle__hdr');
   }
 
-  get totalSteps(): Locator {
-    return this.form.locator('[data-form-progress-total-steps]');
+  errorFor(n: number): Locator {
+    return this.step(n).locator('.helpBlock[data-error-block]');
   }
 
-  async currentStepNumber(): Promise<number> {
-    return Number((await this.progressStep.innerText()).trim());
+  buttonNext(n: number): Locator {
+    return this.form.locator(`button[type="submit"][data-tracking="btn-step-${n}"]`);
   }
 
-  async totalStepsNumber(): Promise<number> {
-    return Number((await this.totalSteps.innerText()).trim());
+  interestCard(label: string): Locator {
+    return this.step(2).getByText(label, { exact: true });
   }
 
-  get inputEmail(): Locator {
-    return this.form.getByRole('textbox', { name: 'Enter Your Email' });
+  propertyCard(label: string): Locator {
+    return this.step(3).getByText(label, { exact: true });
   }
 
-  get inputPhone(): Locator {
-    return this.form.getByRole('textbox', { name: '(XXX)XXX-XXXX' });
+  /** The (visually hidden) interest checkbox behind an option card — used to assert its checked state. */
+  interestOption(label: string): Locator {
+    return this.step(2).locator(`input[value="${label}"]`);
   }
 
-  /** Email capture shown on the out-of-area ("sorry") panel. */
-  get inputNotifyEmail(): Locator {
-    return this.form.getByRole('textbox', { name: 'Email Address' });
-  }
-
-  get stepHeading(): Locator {
-    return this.activeStep().locator('.stepTitle__hdr');
+  /** The (visually hidden) property radio behind an option card — used to assert its checked state. */
+  propertyOption(label: string): Locator {
+    return this.step(3).locator(`input[value="${label}"]`);
   }
 
   get sorryPanel(): Locator {
-    return this.container.locator('.steps.step-sorry');
+    return this.form.locator('.steps.step-sorry');
   }
 
-  /** Inline validation message within the active step, if any. */
-  get errorMessage(): Locator {
-    return this.activeStep().locator('.error, .invalid-feedback, [class*="error"], [role="alert"]');
+  async enterZip(zip: string): Promise<void> {
+    await this.zipInput.fill(zip);
   }
 
-  // --- actions ---
-
-  async enterZipCode(zip: string): Promise<void> {
-    await this.inputZipCode.fill(zip);
+  async chooseInterest(label: string): Promise<void> {
+    await this.interestCard(label).click();
   }
 
-  async selectInterest(label: string): Promise<void> {
-    await this.activeStep().getByText(label, { exact: true }).click();
-  }
-
-  async selectProperty(label: string): Promise<void> {
-    await this.activeStep().getByText(label, { exact: true }).click();
+  async chooseProperty(label: string): Promise<void> {
+    await this.propertyCard(label).click();
   }
 
   async fillName(name: string): Promise<void> {
-    await this.inputName.fill(name);
+    await this.nameInput.fill(name);
   }
 
   async fillEmail(email: string): Promise<void> {
-    await this.inputEmail.fill(email);
+    await this.emailInput.fill(email);
   }
 
   async fillPhone(phone: string): Promise<void> {
-    await this.inputPhone.fill(phone);
+    await this.phoneInput.fill(phone);
   }
 
-  async fillNotifyEmail(email: string): Promise<void> {
-    await this.inputNotifyEmail.fill(email);
+  async submitStep(n: number): Promise<void> {
+    await this.buttonNext(n).click();
   }
 
-  async proceed({ toStep }: { toStep : number }): Promise<void> {
-    await this.buttonNext(toStep - 1).click();
+  async getEmailValidationData(): Promise<{ valid: boolean, message: string }> {
+    const { valid, message } = await this.emailInput
+      .evaluate((el: HTMLInputElement) => ({
+        valid: el.validity.valid,
+        message: el.validationMessage,
+    }))
+    return { valid, message };
   }
 }
