@@ -140,11 +140,18 @@ these two land.
 
 ## Future improvements
 
-1. **Add stable test hooks.** Request `data-testid` attributes (and real `<label>`s) from
-   the dev team so locators stop depending on copy/placeholder text.
-2. **Mock the ZIP availability API.** Stubbing the lookup removes the ~6s spinner wait,
-   makes serviced/out-of-area flows deterministic, and speeds up CI.
-3. **Add visual-regression and accessibility checks.** Snapshot key sections and run an
-   axe/a11y pass — valuable for a design-owned landing page that changes often.
-4. **Expand the browser/device matrix** (more mobile viewports, real WebKit/Edge) once the
-   above stabilizes the core flows.
+1. **Stable test hooks.** Ask the dev team for `data-testid` attributes and real `<label>`s so
+   locators stop leaning on copy and placeholder text.
+2. **ESLint configuration.** Add a flat `eslint.config.js` with `typescript-eslint` and
+   `eslint-plugin-playwright`, plus a `lint` script, and run it in CI to enforce the
+   no-unused-import and no-dead-code rules the brief asks for.
+3. **Pre-commit hooks.** Wire husky and lint-staged to run ESLint and `tsc --noEmit` on staged
+   files before each commit, so problems stop on the developer's machine instead of in CI.
+4. **Dynamic test data with `@faker-js/faker`.** Generate names, emails, and phone numbers per run
+   instead of fixed values, which widens input coverage. Seed it so a failing run still reproduces.
+5. **Result reporting to Slack.** Post a pass/fail summary and the HTML-report link to Slack (or
+   Teams) from CI, so the team catches regressions without opening the Actions tab.
+6. **Visual-regression and accessibility checks.** Snapshot key sections and run an axe pass, which
+   pays off on a design-owned page that changes often.
+7. **Wider browser/device matrix.** Add mobile viewports and real WebKit/Edge once the core flows
+   settle.

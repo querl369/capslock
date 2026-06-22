@@ -13,7 +13,7 @@ import {
   REVIEW_SECTION_HEADING,
 } from '../helper/data/landing-content';
 
-/** Assert an <img> finished loading (decoded with a real intrinsic size). */
+/** Assert an <img> finished loading */
 async function expectImageLoaded(image: Locator, label: string): Promise<void> {
   await expect
     .poll(() => image.evaluate((el: HTMLImageElement) => el.naturalWidth), {
