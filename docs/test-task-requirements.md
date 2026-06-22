@@ -1,8 +1,6 @@
 # QA Team Lead Test Task (Design team) — Requirements
 
-> Decoded from `QA Team Lead Test task (Design team) (2).pdf`. The source is a Google-Docs
-> subset-font PDF; text was reconstructed from the embedded ToUnicode CMaps. A few glyphs
-> originally decoded as digits (T→1, S→0/6) due to the subset font and have been corrected.
+> This is .md version of the `QA Team Lead Test task (Design team) (2).pdf` file.
 
 ## Part 1 — Tech Assignment
 

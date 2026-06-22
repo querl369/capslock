@@ -20,9 +20,10 @@ npm run report                # open the last HTML report
 Useful variants:
 
 ```bash
-npx playwright test --project=chromium            # one browser
-npx playwright test tests/landing-content.spec.ts # one file
-npm run test:headed                               # watch it run
+npx playwright test --project=chromium                          # one browser
+npx playwright test tests/landing-content.spec.ts              # one file
+npx playwright test --grep "property step requires a selection" # one test by title (substring/regex)
+npm run test:headed                                            # watch it run
 ```
 
 ## Project structure
@@ -82,10 +83,7 @@ defects. The remaining tests round out coverage of content and the other field r
 | Property | Property step requires a selection | | `landing-form-validation.spec.ts` |
 | Name (empty) | Contact step rejects an empty name | | `landing-form-validation.spec.ts` |
 | Name (single word) | Contact step accepts a single-word name (**defect**) | | `landing-form-validation.spec.ts` |
-| Hero video | Video displayed with a source; badge loaded; benefits listed | | `landing-content.spec.ts` |
-| Content | All copy visible; every content image loaded | | `landing-content.spec.ts` |
-| Gallery | Product gallery renders all expected slides | | `landing-content.spec.ts` |
-| Reviews | "Show more" reveals the remaining testimonials | | `landing-content.spec.ts` |
+| Content & reviews | One test, stepped: hero video + badge + benefits, all copy & images, gallery slides, and "Show more"/"Show less" toggling the testimonials | | `landing-content.spec.ts` |
 
 **Why these 5:** they map directly to the assignment's mandatory form rules — successful
 submission ends on the Thank-You page (URL assertion), ZIP determines service availability
